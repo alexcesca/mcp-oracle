@@ -1,0 +1,49 @@
+# =======================================================
+#  MCP Oracle Server — Comandos de Build e Gerenciamento
+# =======================================================
+
+# ---- BUILD ----
+# Rebuild completo (sem cache) — use após alterar o código
+docker build --no-cache -t mcp-oracle .
+
+# ---- SUBIR SERVIÇOS ----
+# Sobe TODOS os serviços (STDIO + HTTP) com build automático
+docker compose up -d --build --remove-orphans
+
+# Sobe apenas o servidor HTTP (Streamable HTTP)
+docker compose up -d mcp-oracle-http --build
+
+# Sobe apenas o servidor STDIO (para IDEs)
+docker compose up -d mcp-oracle --build
+
+# ---- LOGS ----
+docker compose logs -f mcp-oracle-http
+
+# ---- URLS DE CONEXÃO (Streamable HTTP) ----
+# Endpoint MCP:    http://localhost:3100/mcp
+# Health check:    http://localhost:3100/health
+# Lista de tools:  http://localhost:3100/
+
+# ---- MCP INSPECTOR (WSL2 / Windows) ----
+# Use este comando — HOST=0.0.0.0 garante acesso pelo Windows
+HOST=0.0.0.0 DANGEROUSLY_OMIT_AUTH=true npx @modelcontextprotocol/inspector --transport streamableHttp --server-url http://localhost:3100/mcp
+
+# Depois acesse no navegador Windows:
+#   http://localhost:6274
+
+# Se ainda não abrir, descubra o IP do WSL com:
+#   hostname -I
+# E acesse:
+#   http://<IP_WSL>:6274
+
+# ---- INSPECTOR SEM SERVIDOR HTTP (via Docker STDIO) ----
+HOST=0.0.0.0 DANGEROUSLY_OMIT_AUTH=true npx @modelcontextprotocol/inspector docker run --rm --env-file .env -i mcp-oracle
+
+# ---- LIMPEZA ----
+# Remove containers parados de execuções anteriores
+docker container prune -f
+
+
+Transport Type: stdio
+Command: node
+Arguments: dist/index.js

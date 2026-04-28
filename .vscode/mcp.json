@@ -1,0 +1,15 @@
+{
+  "servers": {
+    "oracle-19c": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "ORACLE_USER": "${env:ORACLE_USER}",
+        "ORACLE_PASSWORD": "${env:ORACLE_PASSWORD}",
+        "ORACLE_CONNECT_STRING": "${env:ORACLE_CONNECT_STRING}"
+      }
+    }
+  }
+}
