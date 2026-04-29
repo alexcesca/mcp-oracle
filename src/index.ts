@@ -12,6 +12,7 @@ import http from "http";
 
 import { closePool } from "./db/pool.js";
 import { toolDefinitions, dispatchTool } from "./tools/index.js";
+import { logMcpAccess } from "./db/logger.js";
 
 dotenv.config();
 
@@ -43,6 +44,20 @@ function createMcpServer(): Server {
   // Dispatch tool calls
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
+
+    // Log the tool request asynchronously
+    const conexao = process.env.ORACLE_CONNECT_STRING || "unknown";
+    const modeloAcesso = process.env.MCP_MODEL_NAME || "Not Provided";
+    const clienteMcp = process.env.MCP_CLIENT_NAME || "Not Provided";
+
+    logMcpAccess(
+      modeloAcesso,
+      clienteMcp,
+      TRANSPORT_MODE,
+      name,
+      args,
+      conexao
+    ).catch(() => {});
 
     try {
       const result = await dispatchTool(name, (args ?? {}) as Record<string, any>);
