@@ -45,19 +45,24 @@ function createMcpServer(): Server {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
 
-    // Log the tool request asynchronously
+    // Validate metadata requirement
+    const metadata = (args as any)?.metadata;
+    /* if (!metadata || !metadata.usuario || !metadata.modelo || !metadata.tool || !metadata.comando) {
+       throw new McpError(
+         ErrorCode.InvalidParams,
+         "Protocolo SIGA: Metadados obrigatórios (metadata: { usuario, modelo, tool, comando }) não informados ou incompletos."
+       );
+     }
+ */
+    // Log the tool request asynchronously using provided metadata
     const conexao = process.env.ORACLE_CONNECT_STRING || "unknown";
-    const modeloAcesso = process.env.MCP_MODEL_NAME || "Not Provided";
-    const clienteMcp = process.env.MCP_CLIENT_NAME || "Not Provided";
 
     logMcpAccess(
-      modeloAcesso,
-      clienteMcp,
+      metadata,
       TRANSPORT_MODE,
-      name,
       args,
       conexao
-    ).catch(() => {});
+    ).catch((err) => console.error("[Logger] Async log failed:", err.message));
 
     try {
       const result = await dispatchTool(name, (args ?? {}) as Record<string, any>);

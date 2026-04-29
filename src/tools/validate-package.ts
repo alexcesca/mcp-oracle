@@ -1,28 +1,30 @@
 import oracledb from "oracledb";
 import { withConnection } from "../db/pool.js";
+import { metadataSchema } from "./metadata.js";
 
 export const validatePackageStandardsDefinition = {
   name: "validate_package_standards",
   description:
-    "Validate if an Oracle package follows the SIGA development standards defined in Padrao_pl_sql.md. " +
-    "Checks: indentation (3 spaces, no tabs), procedure/function header comments, naming conventions " +
-    "(PKB_/PKL_ for procedures, FKG_/FKL_ for functions), variable prefixes (local vn_/vv_/vd_/vb_/vt_/vr_/vc_, " +
-    "private gn_/gv_/gd_/gb_/gt_/gr_, input params en_/ev_/ed_/eb_/et_/er_/ec_, output params sn_/sv_/sd_/sb_/st_/sr_/sc_ " +
-    "with NOCOPY, in-out params esn_/esv_/esd_/esb_/est_/esr_/esc_ with NOCOPY), exception prefixes (ve_), " +
-    "type record prefixes (t_rec_/t_tab_rec_), cursor prefixes (cur_), package file naming (pk_[module]_[shortname]), " +
-    "mandatory standard procedures for table packages (FKG_SEQ, PKB_VAL, PKB_CON, PKB_INC, PKB_ALT, PKB_EXC), " +
-    "no SELECT *, no DBMS_OUTPUT in production, no commented-out code blocks, no %ROWTYPE in program packages, " +
-    "constants in UPPERCASE, DDL keywords in UPPERCASE, exception handling patterns (ve_erro, OTHERS starting at 90000, " +
-    "pk_soft.pkb_busca_msg_erro calls), DML restriction in functions, and bulk collect vs cursor guidance.",
+    "Valida se um pacote Oracle segue os padrões de desenvolvimento SIGA definidos em Padrao_pl_sql.md. " +
+    "Verifica: indentação (3 espaços, sem tabs), comentários de cabeçalho de procedure/função, convenções de nomenclatura " +
+    "(PKB_/PKL_ para procedures, FKG_/FKL_ para funções), prefixos de variáveis (locais vn_/vv_/vd_/vb_/vt_/vr_/vc_, " +
+    "privadas gn_/gv_/gd_/gb_/gt_/gr_, parâmetros de entrada en_/ev_/ed_/eb_/et_/er_/ec_, parâmetros de saída sn_/sv_/sd_/sb_/st_/sr_/sc_ " +
+    "com NOCOPY, parâmetros de entrada-saída esn_/esv_/esd_/esb_/est_/esr_/esc_ com NOCOPY), prefixo de exceção (ve_), " +
+    "prefixos de tipos record (t_rec_/t_tab_rec_), prefixo de cursor (cur_), nomenclatura do arquivo de pacote (pk_[modulo]_[nome_curto]), " +
+    "procedures padrão obrigatórias para pacotes de tabela (FKG_SEQ, PKB_VAL, PKB_CON, PKB_INC, PKB_ALT, PKB_EXC), " +
+    "sem SELECT *, sem DBMS_OUTPUT em produção, sem blocos de código comentados, sem %ROWTYPE em pacotes de programa/tela, " +
+    "constantes em MAIÚSCULO, palavras-chave DDL em MAIÚSCULO, padrões de tratamento de exceção (ve_erro, OTHERS iniciando em 90000, " +
+    "chamadas pk_soft.pkb_busca_msg_erro), restrição de DML em funções e orientação sobre bulk collect vs cursor.",
   inputSchema: {
     type: "object",
     properties: {
       packageName: {
         type: "string",
-        description: "The name of the package to validate.",
+        description: "O nome do pacote a ser validado.",
       },
+      metadata: metadataSchema,
     },
-    required: ["packageName"],
+    required: ["packageName", "metadata"],
   },
 };
 

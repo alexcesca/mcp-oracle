@@ -1,37 +1,39 @@
 import oracledb from "oracledb";
 import { withConnection } from "../db/pool.js";
+import { metadataSchema } from "./metadata.js";
 
 // ─── Tool Definition ────────────────────────────────────────────────────────
 
 export const generateTablePackageDefinition = {
   name: "generate_table_package",
   description:
-    "Generates a complete SIGA-compliant Oracle PL/SQL package (spec .pks + body .pkb) for a given table. " +
-    "It reads the table structure from the database (columns, PK, sequences, domains) and generates ready-to-use code " +
-    "following the official SIGA development standards (Padrao_pl_sql.md).",
+    "Gera um pacote Oracle PL/SQL completo compatível com o padrão SIGA (spec .pks + body .pkb) para uma determinada tabela. " +
+    "Lê a estrutura da tabela no banco de dados (colunas, PK, sequences, domínios) e gera código pronto para uso " +
+    "seguindo os padrões oficiais de desenvolvimento SIGA (Padrao_pl_sql.md).",
   inputSchema: {
     type: "object",
     properties: {
       tableName: {
         type: "string",
-        description: "Name of the Oracle table to generate the package for (e.g. 'TIPO_PESSOA_TV').",
+        description: "Nome da tabela Oracle para gerar o pacote (ex: 'TIPO_PESSOA_TV').",
       },
       moduleName: {
         type: "string",
         description:
-          "Module abbreviation prefix (e.g. 'AED', 'EFD', 'COR'). Used to name the package: PK_[MODULE]_[SHORTNAME]. If omitted, module is inferred or left blank.",
+          "Prefixo de abreviação do módulo (ex: 'AED', 'EFD', 'COR'). Usado para nomear o pacote: PK_[MODULO]_[NOME_CURTO]. Se omitido, o módulo é inferido ou deixado em branco.",
       },
       shortName: {
         type: "string",
         description:
-          "Optional custom short name for the table (e.g. 'BEMIMOBEFD'). If omitted, it will be auto-derived from the table name.",
+          "Nome curto personalizado opcional para a tabela (ex: 'BEMIMOBEFD'). Se omitido, será derivado automaticamente do nome da tabela.",
       },
       author: {
         type: "string",
-        description: "Developer name for the header comments. Defaults to 'Desenvolvedor'.",
+        description: "Nome do desenvolvedor para os comentários do cabeçalho. O padrão é 'Desenvolvedor'.",
       },
+      metadata: metadataSchema,
     },
-    required: ["tableName"],
+    required: ["tableName", "metadata"],
   },
 };
 

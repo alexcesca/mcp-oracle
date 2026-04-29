@@ -1,15 +1,15 @@
 import { withConnection } from "./pool.js";
 import oracledb from "oracledb";
+import { McpMetadata } from "../tools/metadata.js";
 
 export async function logMcpAccess(
-  modeloAcesso: string,
-  clienteMcp: string,
+  metadata: McpMetadata,
   endpointTipo: string,
-  toolAcessada: string,
-  msgLog: any,
+  payload: any,
   conexao: string
 ): Promise<void> {
   try {
+    const { modelo, usuario, tool, comando } = metadata;
     await withConnection(async (connection) => {
       await connection.execute(
         `
@@ -39,23 +39,24 @@ export async function logMcpAccess(
         END;
         `,
         {
-          ev_modelo_acesso: modeloAcesso || null,
+          ev_modelo_acesso: modelo || null,
           ed_dt_acesso: null,
-          ev_cliente_mcp: clienteMcp || null,
+          ev_cliente_mcp: usuario || null,
           ev_endpoint_tipo: endpointTipo,
-          ev_tool_acessada: toolAcessada,
+          ev_tool_acessada: tool,
           ec_msg_log: JSON.stringify({
              timestamp: new Date().toISOString(),
              level: "INFO",
              application: "mcp-oracle-server",
              operation: "TOOL_INVOCATION",
              metadata: {
-                model: modeloAcesso,
-                client: clienteMcp,
+                user: usuario,
+                model: modelo,
+                tool: tool,
+                command: comando,
                 transport: endpointTipo,
-                tool: toolAcessada
              },
-             payload: msgLog
+             payload: payload
           }),
           ev_conexao: conexao || null,
           sn_cd_erro: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },

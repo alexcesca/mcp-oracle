@@ -1,35 +1,39 @@
 import oracledb from "oracledb";
 import { withConnection } from "../db/pool.js";
+import { metadataSchema } from "./metadata.js";
 
 export const getCouplingDefinition = {
   name: "get_coupling",
-  description: "Analyze module/package coupling based on the acoplamento_siga table. Can filter by calling package (package_origem), called package (package_chamada), originating module (modulo_origem) and called module (modulo_chamado).",
+  description: "Analisa o acoplamento de módulos/pacotes com base na tabela acoplamento_siga. Pode filtrar por pacote de origem (package_origem), pacote chamado (package_chamada), módulo de origem (modulo_origem) e módulo chamado (modulo_chamado).",
   inputSchema: {
     type: "object",
     properties: {
       packageOrigem: {
         type: "string",
-        description: "Filter by the package making the call (PACKAGE_ORIGEM) (e.g. 'PK_AED_SOMETHING')",
+        description: "Filtrar pelo pacote que faz a chamada (PACKAGE_ORIGEM) (ex: 'PK_AED_SOMETHING')",
       },
       packageChamada: {
         type: "string",
-        description: "Filter by the package being called (PACKAGE_CHAMADA) (e.g. 'PK_EFD_SOMETHING')",
+        description: "Filtrar pelo pacote que está sendo chamado (PACKAGE_CHAMADA) (ex: 'PK_EFD_SOMETHING')",
       },
       moduloOrigem: {
         type: "string",
-        description: "Filter by the module of the calling package (MODULO_ORIGEM)",
+        description: "Filtrar pelo módulo do pacote de origem (MODULO_ORIGEM)",
       },
       moduloChamado: {
         type: "string",
-        description: "Filter by the module of the called package (MODULO_CHAMADO)",
+        description: "Filtrar pelo módulo do pacote chamado (MODULO_CHAMADO)",
       },
       maxRows: {
         type: "number",
-        description: "Maximum number of rows to return (default is 100)",
-      }
+        description: "Número máximo de linhas a retornar (padrão é 100)",
+      },
+      metadata: metadataSchema,
     },
+    required: ["metadata"],
   },
 };
+
 
 export async function getCouplingHandler(args: {
   packageOrigem?: string;

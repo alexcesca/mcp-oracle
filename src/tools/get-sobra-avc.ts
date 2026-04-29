@@ -1,6 +1,7 @@
 import oracledb from "oracledb";
 import { McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
 import { withConnection } from "../db/pool.js";
+import { metadataSchema } from "./metadata.js";
 
 export const getSobraAvcDefinition = {
   name: "get_sobra_avc",
@@ -16,8 +17,9 @@ export const getSobraAvcDefinition = {
         type: "string",
         description: "Data de fim da consulta (formato YYYY-MM-DD).",
       },
+      metadata: metadataSchema,
     },
-    required: ["startDate", "endDate"],
+    required: ["startDate", "endDate", "metadata"],
   },
 };
 

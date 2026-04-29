@@ -1,27 +1,29 @@
 import oracledb from "oracledb";
 import { McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
 import { withConnection } from "../db/pool.js";
+import { metadataSchema } from "./metadata.js";
 
 export const getTableIndexesDefinition = {
   name: "get_table_indexes",
   description:
-    "Get all indexes for a specific table, including index name, type, uniqueness, columns, and status. " +
-    "Useful for performance analysis, checking missing indexes, and validating index coverage.",
+    "Obtém todos os índices de uma tabela específica, incluindo nome do índice, tipo, unicidade, colunas e status. " +
+    "Útil para análise de desempenho, verificação de índices ausentes e validação de cobertura de índices.",
   inputSchema: {
     type: "object",
     properties: {
       tableName: {
         type: "string",
         description:
-          "The name of the table to retrieve indexes for (case-insensitive).",
+          "O nome da tabela para recuperar os índices (case-insensitive).",
       },
       includeStats: {
         type: "boolean",
         description:
-          "If true, includes additional statistics like distinct keys, leaf blocks, and last analyzed date. Default: false.",
+          "Se verdadeiro, inclui estatísticas adicionais como chaves distintas, blocos de folhas e data da última análise. Padrão: false.",
       },
+      metadata: metadataSchema,
     },
-    required: ["tableName"],
+    required: ["tableName", "metadata"],
   },
 };
 
