@@ -8,17 +8,9 @@ export const getCouplingDefinition = {
   inputSchema: {
     type: "object",
     properties: {
-      packageOrigem: {
+      moduloChamador: {
         type: "string",
-        description: "Filtrar pelo pacote que faz a chamada (PACKAGE_ORIGEM) (ex: 'PK_AED_SOMETHING')",
-      },
-      packageChamada: {
-        type: "string",
-        description: "Filtrar pelo pacote que está sendo chamado (PACKAGE_CHAMADA) (ex: 'PK_EFD_SOMETHING')",
-      },
-      moduloOrigem: {
-        type: "string",
-        description: "Filtrar pelo módulo do pacote de origem (MODULO_ORIGEM)",
+        description: "Filtrar pelo módulo do pacote de origem (MODULO_CHAMADOR)",
       },
       moduloChamado: {
         type: "string",
@@ -36,40 +28,29 @@ export const getCouplingDefinition = {
 
 
 export async function getCouplingHandler(args: {
-  packageOrigem?: string;
-  packageChamada?: string;
-  moduloOrigem?: string;
+  moduloChamador?: string;
   moduloChamado?: string;
   maxRows?: number;
 }) {
   return withConnection(async (connection) => {
-    const { packageOrigem, packageChamada, moduloOrigem, moduloChamado, maxRows = 100 } = args || {};
+    const { moduloChamador, moduloChamado, maxRows = 100 } = args || {};
 
     let query = `
       SELECT 
-        PACKAGE_ORIGEM,
-        PACKAGE_CHAMADA,
-        MODULO_ORIGEM,
-        MODULO_CHAMADO
-      FROM acoplamento_siga
+        modulo_chamador,
+        modulo_chamado,
+        qtde_chamada
+      FROM acompalento_siga_resumo
       WHERE 1=1
     `;
     const binds: Record<string, string> = {};
 
-    if (packageOrigem) {
-      query += ` AND UPPER(PACKAGE_ORIGEM) LIKE UPPER(:packageOrigem)`;
-      binds.packageOrigem = `%${packageOrigem}%`;
-    }
-    if (packageChamada) {
-      query += ` AND UPPER(PACKAGE_CHAMADA) LIKE UPPER(:packageChamada)`;
-      binds.packageChamada = `%${packageChamada}%`;
-    }
-    if (moduloOrigem) {
-      query += ` AND UPPER(MODULO_ORIGEM) LIKE UPPER(:moduloOrigem)`;
-      binds.moduloOrigem = `%${moduloOrigem}%`;
+    if (moduloChamador) {
+      query += ` AND UPPER(modulo_chamador) LIKE UPPER(:moduloChamador)`;
+      binds.moduloChamador = `%${moduloChamador}%`;
     }
     if (moduloChamado) {
-      query += ` AND UPPER(MODULO_CHAMADO) LIKE UPPER(:moduloChamado)`;
+      query += ` AND UPPER(modulo_chamado) LIKE UPPER(:moduloChamado)`;
       binds.moduloChamado = `%${moduloChamado}%`;
     }
 

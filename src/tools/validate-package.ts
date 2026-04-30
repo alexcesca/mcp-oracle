@@ -704,50 +704,60 @@ export async function validatePackageStandardsHandler(args: { packageName: strin
     // ═══════════════════════════════════════════════════════════════════════════
     // BUILD FINAL REPORT
     // ═══════════════════════════════════════════════════════════════════════════
-    const report: string[] = [];
-    report.push(`╔══════════════════════════════════════════════════════════╗`);
-    report.push(`║  SIGA Standards Validation Report                      ║`);
-    report.push(`║  Package: ${packageName.padEnd(45)}║`);
-    report.push(`╚══════════════════════════════════════════════════════════╝`);
-    report.push("");
+    
+    // Função helper para tentar extrair e estruturar a mensagem
+    const parseFinding = (rawMsg: string, severity: "ERRO" | "ALERTA" | "SUGESTÃO") => {
+      // Remove o prefixo do bracket ex: [FAIL], [WARN], [INFO]
+      let msg = rawMsg.replace(/^\[(FAIL|WARN|INFO)\]\s*/i, "");
+      
+      // Procura "(line X)" ou "line X"
+      let excerpt = "Desconhecido";
+      const lineMatch = msg.match(/\(?line\s+(\d+)\)?/i);
+      if (lineMatch) {
+         excerpt = "Linha " + lineMatch[1];
+         msg = msg.replace(lineMatch[0], "").trim();
+      }
 
-    // Summary
-    const totalIssues = fails.length + warns.length + infos.length;
-    report.push(`📊 Summary: ${fails.length} FAIL(s) | ${warns.length} WARN(s) | ${infos.length} INFO(s)`);
-    report.push(`📦 Package Type: ${isScreenPackage ? "Screen (Forms)" : isTablePackage ? "Table" : "Unknown/Custom"}`);
-    report.push(`📋 Spec Lines: ${spec.length} | Body Lines: ${body.length}`);
-    report.push(`🔧 Procedures: ${procNames.length} | Functions: ${funcNames.length}`);
-    report.push("");
+      // Procura por regras / contexto na primeira frase
+      const phrases = msg.split(". ");
+      const description = phrases[0] ? phrases[0].trim() + (phrases[0].endsWith(".") ? "" : ".") : msg;
+      
+      // O restante vira recomendação / detalhe analítico
+      let recommendation = phrases.slice(1).join(". ").trim();
+      if (!recommendation) recommendation = "Revise o código para atender os padrões SIGA.";
 
-    if (fails.length > 0) {
-      report.push("── FAILURES (must fix) ──────────────────────────────────");
-      fails.forEach((f) => report.push(f));
-      report.push("");
-    }
+      return {
+        severity,
+        rule: "Padrao_SIGA", // Regra genérica mapeada
+        description,
+        code_excerpt: excerpt,
+        recommendation
+      };
+    };
 
-    if (warns.length > 0) {
-      report.push("── WARNINGS (should fix) ────────────────────────────────");
-      warns.forEach((w) => report.push(w));
-      report.push("");
-    }
+    const findingsArr: any[] = [];
+    fails.forEach(f => findingsArr.push(parseFinding(f, "ERRO")));
+    warns.forEach(w => findingsArr.push(parseFinding(w, "ALERTA")));
+    infos.forEach(i => findingsArr.push(parseFinding(i, "SUGESTÃO")));
 
-    if (infos.length > 0) {
-      report.push("── INFORMATIONAL ───────────────────────────────────────");
-      infos.forEach((inf) => report.push(inf));
-      report.push("");
-    }
+    let status = "APROVADO";
+    if (fails.length > 0) status = "REPROVADO";
+    else if (warns.length > 0) status = "APROVADO_COM_ALERTAS";
 
-    if (totalIssues === 0) {
-      report.push("✅ [SUCCESS] Package follows all SIGA development standards.");
-    } else {
-      report.push("────────────────────────────────────────────────────────");
-      report.push(
-        `Standards Reference: Padrao_pl_sql.md`
-      );
-    }
+    const reportObj = {
+      object_name: packageName,
+      object_type: isScreenPackage ? "PACKAGE (SCREEN)" : (isTablePackage ? "PACKAGE (TABLE)" : "PACKAGE"),
+      status,
+      summary: {
+        errors: fails.length,
+        warnings: warns.length,
+        suggestions: infos.length
+      },
+      findings: findingsArr
+    };
 
     return {
-      content: [{ type: "text", text: report.join("\n") }],
+      content: [{ type: "text", text: JSON.stringify(reportObj, null, 2) }],
     };
   });
 }

@@ -24,7 +24,7 @@ export async function logMcpAccess(
                                , CONEXAO
                                ) VALUES ( LOGMCP_SEQ.NEXTVAL
                                         , :ev_modelo_acesso
-                                        , NVL(:ed_dt_acesso, SYSDATE)
+                                        , NVL(:ed_dt_acesso, SYSTIMESTAMP)
                                         , :ev_cliente_mcp
                                         , :ev_endpoint_tipo
                                         , :ev_tool_acessada
@@ -40,7 +40,7 @@ export async function logMcpAccess(
         `,
         {
           ev_modelo_acesso: modelo || null,
-          ed_dt_acesso: null,
+          ed_dt_acesso: new Date(),
           ev_cliente_mcp: usuario || null,
           ev_endpoint_tipo: endpointTipo,
           ev_tool_acessada: tool,

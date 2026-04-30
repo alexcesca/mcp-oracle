@@ -1,10 +1,10 @@
 import oracledb from "oracledb";
-const ORACLE_USER = process.env.ORACLE_USER;
-const ORACLE_PASSWORD = process.env.ORACLE_PASSWORD;
-const ORACLE_CONNECT_STRING = process.env.ORACLE_CONNECT_STRING;
 let pool = null;
 export async function getPool() {
     if (!pool) {
+        const ORACLE_USER = process.env.ORACLE_USER;
+        const ORACLE_PASSWORD = process.env.ORACLE_PASSWORD;
+        const ORACLE_CONNECT_STRING = process.env.ORACLE_CONNECT_STRING;
         pool = await oracledb.createPool({
             user: ORACLE_USER,
             password: ORACLE_PASSWORD,

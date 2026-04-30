@@ -1,18 +1,20 @@
 import oracledb from "oracledb";
 import { McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
 import { withConnection } from "../db/pool.js";
+import { metadataSchema } from "./metadata.js";
 export const describeTableDefinition = {
     name: "describe_table",
-    description: "Get schema information for a specific table.",
+    description: "Obtém informações do esquema para uma tabela específica.",
     inputSchema: {
         type: "object",
         properties: {
             tableName: {
                 type: "string",
-                description: "The name of the table to describe (case-insensitive usually, but passed as-is).",
+                description: "O nome da tabela a descrever (geralmente case-insensitive, mas passado como está).",
             },
+            metadata: metadataSchema,
         },
-        required: ["tableName"],
+        required: ["tableName", "metadata"],
     },
 };
 export async function describeTableHandler(args) {

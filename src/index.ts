@@ -4,6 +4,8 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
   ErrorCode,
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
@@ -12,6 +14,7 @@ import http from "http";
 
 import { closePool } from "./db/pool.js";
 import { toolDefinitions, dispatchTool } from "./tools/index.js";
+import { promptDefinitions, dispatchPrompt } from "./prompts/index.js";
 import { logMcpAccess } from "./db/logger.js";
 
 dotenv.config();
@@ -33,13 +36,30 @@ if (!ORACLE_USER || !ORACLE_PASSWORD || !ORACLE_CONNECT_STRING) {
 function createMcpServer(): Server {
   const server = new Server(
     { name: "mcp-oracle", version: "1.0.0" },
-    { capabilities: { tools: {} } }
+    { capabilities: { tools: {}, prompts: {} } }
   );
 
   // List all available tools
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: toolDefinitions,
   }));
+
+  // List all available prompts
+  server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+    prompts: promptDefinitions,
+  }));
+
+  // Fetch prompt content
+  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    const { name, arguments: args } = request.params;
+    const result = dispatchPrompt(name, args);
+
+    if (!result) {
+      throw new McpError(ErrorCode.MethodNotFound, `Unknown prompt: \${name}`);
+    }
+
+    return result;
+  });
 
   // Dispatch tool calls
   server.setRequestHandler(CallToolRequestSchema, async (request) => {

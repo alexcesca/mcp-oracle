@@ -1,16 +1,19 @@
 import oracledb from "oracledb";
 import { withConnection } from "../db/pool.js";
+import { metadataSchema } from "./metadata.js";
 export const listTablesDefinition = {
     name: "list_tables",
-    description: "List tables available to the current user in the Oracle database.",
+    description: "Lista as tabelas disponíveis para o usuário atual no banco de dados Oracle.",
     inputSchema: {
         type: "object",
         properties: {
             pattern: {
                 type: "string",
-                description: "Optional SQL LIKE pattern to filter table names (e.g. 'EMP%')",
+                description: "Padrão SQL LIKE opcional para filtrar nomes de tabelas (ex: 'EMP%')",
             },
+            metadata: metadataSchema,
         },
+        required: ["metadata"],
     },
 };
 export async function listTablesHandler(args) {

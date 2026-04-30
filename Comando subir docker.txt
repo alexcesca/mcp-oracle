@@ -47,3 +47,7 @@ docker container prune -f
 Transport Type: stdio
 Command: node
 Arguments: dist/index.js
+
+
+docker compose up -d --build --remove-orphans
+npx @modelcontextprotocol/inspector

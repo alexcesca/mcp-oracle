@@ -1,16 +1,19 @@
 import oracledb from "oracledb";
 import { withConnection } from "../db/pool.js";
+import { metadataSchema } from "./metadata.js";
 export const listPackagesDefinition = {
     name: "list_packages",
-    description: "List all packages, their procedures, and their system context (module).",
+    description: "Lista todos os pacotes, suas procedures e seu contexto de sistema (módulo).",
     inputSchema: {
         type: "object",
         properties: {
             pattern: {
                 type: "string",
-                description: "Optional SQL LIKE pattern to filter package names (e.g. 'PK_AED%').",
+                description: "Padrão SQL LIKE opcional para filtrar nomes de pacotes (ex: 'PK_AED%').",
             },
+            metadata: metadataSchema,
         },
+        required: ["metadata"],
     },
 };
 export async function listPackagesHandler(args) {

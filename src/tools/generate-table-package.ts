@@ -71,8 +71,8 @@ function deriveShortName(tableName: string): string {
 function getPrefixForType(colName: string, dataType: string): { param_in: string; param_out: string; local: string } {
   const name = colName.toLowerCase();
   if (dataType === "DATE" || dataType === "TIMESTAMP") return { param_in: "ed_", param_out: "sd_", local: "vd_" };
-  if (dataType === "CLOB" || dataType === "BLOB")   return { param_in: "ec_", param_out: "sc_", local: "vc_" };
-  if (dataType === "NUMBER")                          return { param_in: "en_", param_out: "sn_", local: "vn_" };
+  if (dataType === "CLOB" || dataType === "BLOB") return { param_in: "ec_", param_out: "sc_", local: "vc_" };
+  if (dataType === "NUMBER") return { param_in: "en_", param_out: "sn_", local: "vn_" };
   return { param_in: "ev_", param_out: "sv_", local: "vv_" };
 }
 
@@ -319,7 +319,7 @@ function generateBody(
   const L = (s = "") => lines.push(s);
   const dt = today();
 
-  L(`PACKAGE BODY ${PKG} IS`);
+  L(`CREATE OR REPLACE PACKAGE BODY ${PKG} IS`);
   L(`   ---`);
   L();
   L(`   -- User Exceptions`);

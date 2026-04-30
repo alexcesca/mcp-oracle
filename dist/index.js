@@ -1,11 +1,13 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { CallToolRequestSchema, ListToolsRequestSchema, ErrorCode, McpError, } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema, ListPromptsRequestSchema, GetPromptRequestSchema, ErrorCode, McpError, } from "@modelcontextprotocol/sdk/types.js";
 import * as dotenv from "dotenv";
 import http from "http";
 import { closePool } from "./db/pool.js";
 import { toolDefinitions, dispatchTool } from "./tools/index.js";
+import { promptDefinitions, dispatchPrompt } from "./prompts/index.js";
+import { logMcpAccess } from "./db/logger.js";
 dotenv.config();
 const ORACLE_USER = process.env.ORACLE_USER;
 const ORACLE_PASSWORD = process.env.ORACLE_PASSWORD;
@@ -17,14 +19,39 @@ if (!ORACLE_USER || !ORACLE_PASSWORD || !ORACLE_CONNECT_STRING) {
     process.exit(1);
 }
 function createMcpServer() {
-    const server = new Server({ name: "mcp-oracle", version: "1.0.0" }, { capabilities: { tools: {} } });
+    const server = new Server({ name: "mcp-oracle", version: "1.0.0" }, { capabilities: { tools: {}, prompts: {} } });
     // List all available tools
     server.setRequestHandler(ListToolsRequestSchema, async () => ({
         tools: toolDefinitions,
     }));
+    // List all available prompts
+    server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+        prompts: promptDefinitions,
+    }));
+    // Fetch prompt content
+    server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+        const { name, arguments: args } = request.params;
+        const result = dispatchPrompt(name, args);
+        if (!result) {
+            throw new McpError(ErrorCode.MethodNotFound, `Unknown prompt: \${name}`);
+        }
+        return result;
+    });
     // Dispatch tool calls
     server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const { name, arguments: args } = request.params;
+        // Validate metadata requirement
+        const metadata = args?.metadata;
+        /* if (!metadata || !metadata.usuario || !metadata.modelo || !metadata.tool || !metadata.comando) {
+           throw new McpError(
+             ErrorCode.InvalidParams,
+             "Protocolo SIGA: Metadados obrigatórios (metadata: { usuario, modelo, tool, comando }) não informados ou incompletos."
+           );
+         }
+     */
+        // Log the tool request asynchronously using provided metadata
+        const conexao = process.env.ORACLE_CONNECT_STRING || "unknown";
+        logMcpAccess(metadata, TRANSPORT_MODE, args, conexao).catch((err) => console.error("[Logger] Async log failed:", err.message));
         try {
             const result = await dispatchTool(name, (args ?? {}));
             if (result === null) {
