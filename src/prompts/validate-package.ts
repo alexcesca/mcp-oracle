@@ -147,6 +147,7 @@ Apresente um cabeçalho sumarizado com:
 - Nome do Objeto e Tipo.
 - Status final (APROVADO, APROVADO_COM_ALERTAS ou REPROVADO).
 - Tabela de resumo com a contagem exata de problemas agrupada por severidade (ERRO, ALERTA, SUGESTÃO).
+- Retorne os dados de forma estruturada e legível.
 
 ### 2. Visão Analítica
 Gere uma tabela estruturada ou uma lista rica contendo todos os detalhes de cada violação encontrada:
@@ -156,11 +157,13 @@ Gere uma tabela estruturada ou uma lista rica contendo todos os detalhes de cada
 - **Descrição Analítica** (explicação aprofundada do problema baseada nas diretrizes já providenciadas).
 - **Trecho do Código** (o excerto problemático).
 - **Recomendação** (como corrigir e enquadrá-lo no padrão).
+- Retorne os dados de forma estruturada e legível.
 
 Regras finais para o status:
 - Se houver pelo menos um ERRO → status = REPROVADO
 - Se não houver ERRO, mas existir ALERTA → status = APROVADO_COM_ALERTAS
-- Se não houver ERRO nem ALERTA → status = APROVADO`,
+- Se não houver ERRO nem ALERTA → status = APROVADO
+Retorne os dados de forma estruturada e legível.`,
         },
       },
     ],
